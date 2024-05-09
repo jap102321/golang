@@ -7,6 +7,9 @@ import (
 	"strconv"
 )
 
+
+
+
 const accountBalanceFile = "balance.txt"
 
 func writeBalanceToFile(balance float64) {
@@ -38,6 +41,7 @@ func main() {
 		fmt.Println("ERROR")
 		fmt.Println(err)
 		fmt.Println("-----")
+		panic(err)
 	}
 
 	for i := 0; i < 200; i++ {

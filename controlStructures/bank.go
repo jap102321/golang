@@ -1,102 +1,74 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"strconv"
+
+	"example.com/bank/fileops"
+	"github.com/Pallinder/go-randomdata"
 )
-
-
-
 
 const accountBalanceFile = "balance.txt"
 
-func writeBalanceToFile(balance float64) {
-	balanceText := fmt.Sprint(balance)
-	os.WriteFile(accountBalanceFile, []byte(balanceText), 0644)
-}
-
-func getBalanceFromFile() (float64, error) {
-	data, err := os.ReadFile(accountBalanceFile)
-
-	if err != nil {
-		return 1000, errors.New("failed to fetch balance")
-	}
-
-	balanceText := string(data)
-	balance, err := strconv.ParseFloat(balanceText, 64)
-	if err != nil {
-		return 1000, errors.New("failed to parse balance")
-	}
-
-	return balance, nil
-
-}
-
 func main() {
-	var accountBalance, err = getBalanceFromFile()
+	var accountBalance, err = fileops.GetFloatFromFile(accountBalanceFile)
 
 	if err != nil {
 		fmt.Println("ERROR")
 		fmt.Println(err)
-		fmt.Println("-----")
-		panic(err)
+		fmt.Println("---------")
+		// panic("Can't continue, sorry.")
 	}
 
-	for i := 0; i < 200; i++ {
-		fmt.Println("Welcome to Go Bank!")
-		fmt.Println("What do you want to do?")
-		fmt.Println("1. Check balance")
-		fmt.Println("2. Deposit money")
-		fmt.Println("3. Withdraw money")
-		fmt.Println("4. Exit")
-
+	fmt.Println("Welcome to Go Bank!")
+	fmt.Println("Reach us", randomdata.PhoneNumber())
+	for {
+		presentOptions()
 		var choice int
-		fmt.Print("Select an option: ")
+		fmt.Print("Your choice: ")
 		fmt.Scan(&choice)
 
-		fmt.Println("Your choice:", choice)
+		// wantsCheckBalance := choice == 1
 
-		if choice == 1 {
-			fmt.Printf("Your account balance is %v \n", accountBalance)
-			continue
-		} else if choice == 2 {
-			fmt.Print("Deposit amount:")
+		switch choice {
+		case 1:
+			fmt.Println("Your balance is", accountBalance)
+		case 2:
+			fmt.Print("Your deposit: ")
 			var depositAmount float64
 			fmt.Scan(&depositAmount)
 
 			if depositAmount <= 0 {
-				fmt.Println("Invalid amount must be greater than 0")
+				fmt.Println("Invalid amount. Must be greater than 0.")
+				// return
 				continue
 			}
 
-			accountBalance += depositAmount
-			fmt.Println("Your new account balance is", accountBalance)
-			writeBalanceToFile(accountBalance)
-			continue
-		} else if choice == 3 {
-			fmt.Print("Withdraw amount:")
-			var withdrawAmount float64
-			fmt.Scan(&withdrawAmount)
+			accountBalance += depositAmount // accountBalance = accountBalance + depositAmount
+			fmt.Println("Balance updated! New amount:", accountBalance)
+			fileops.WriteFloatToFile(accountBalance, accountBalanceFile)
+		case 3:
+			fmt.Print("Withdrawal amount: ")
+			var withdrawalAmount float64
+			fmt.Scan(&withdrawalAmount)
 
-			if withdrawAmount <= 0 {
-				fmt.Print("Invalid amount must be greater than 0")
+			if withdrawalAmount <= 0 {
+				fmt.Println("Invalid amount. Must be greater than 0.")
 				continue
 			}
 
-			if accountBalance-withdrawAmount < 0 {
-				fmt.Print("You don't have enough founds to withdraw")
+			if withdrawalAmount > accountBalance {
+				fmt.Println("Invalid amount. You can't withdraw more than you have.")
 				continue
 			}
 
-			accountBalance -= withdrawAmount
-			fmt.Println("Your new account balance is", accountBalance)
-			writeBalanceToFile(accountBalance)
-			continue
-		} else {
+			accountBalance -= withdrawalAmount // accountBalance = accountBalance + depositAmount
+			fmt.Println("Balance updated! New amount:", accountBalance)
+			fileops.WriteFloatToFile(accountBalance, accountBalanceFile)
+		default:
 			fmt.Println("Goodbye!")
-			break
+			fmt.Println("Thanks for choosing our bank")
+			return
+			// break
 		}
 	}
 }
